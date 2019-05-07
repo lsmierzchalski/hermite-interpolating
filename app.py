@@ -8,6 +8,8 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 
 import numpy as np
+from sympy import *
+from sympy.parsing.sympy_parser import parse_expr
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -15,17 +17,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
-x = np.linspace(-2*np.pi, 2*np.pi, 100)
-y = np.sin(x)
-
-trace1 = go.Scatter(
-    x=x,
-    y=y,
-    mode='lines',
-)
-
-# use numpy's built in trapezoid-rule integration tool
-dy = np.trapz(y, x)
+xd = True
 
 app.layout = html.Div([
     html.H1('Interpolacja funkcji metodą Hermite’a.'),
@@ -72,34 +64,39 @@ app.layout = html.Div([
             html.H6('Wykres:'),
             dcc.Graph(
                 id='example-graph',
-                figure={
-                    'data': [go.Scatter(
-                        x=x,
-                        y=y,
-                        mode='lines',
-                    )],
-                    'layout': go.Layout(
-                        hovermode='closest',
-                        height=650
-                    )
-                }
             )
         ], className="ten columns")
     ], className='row')
 ])
 
 @app.callback(
-              dash.dependencies.Output('display-value', 'children'),
+              dash.dependencies.Output('example-graph', 'figure'),
               [dash.dependencies.Input('start_button', 'n_clicks')],
-              [dash.dependencies.State('begin_input', 'value')]
+              [dash.dependencies.State('function_input', 'value')]
               )
-
 def update_output(n_clicks, value):
-    return 'The input value was "{}" and the button has been clicked {} times'.format(
-        value,
-        n_clicks
-    )
+    X = Symbol('x')
+    fun = parse_expr(value)
 
+    x = np.linspace(-2 * np.pi, 2 * np.pi, 1000)
+    f = lambdify(X, fun, 'numpy')
+
+    data = []
+    data.append(go.Scatter(
+        x=x,
+        y=f(x),
+        mode='lines',
+        name=str(fun)
+    ))
+
+    figure = {
+        'data': data,
+        'layout': go.Layout(
+            height=650
+        )
+    }
+
+    return figure
 
 
 if __name__ == '__main__':
