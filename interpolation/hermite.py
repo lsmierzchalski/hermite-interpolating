@@ -80,6 +80,7 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
 
     return simplify(polynomial)
 
+
 if __name__ == '__main__':
 
     x = Symbol('x')
