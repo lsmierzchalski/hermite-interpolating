@@ -53,7 +53,7 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
     tmp_fun = fun
     polynomial = str(tab[1][1])
     polynomial_tmp = ''
-    for col in range(0, n-1):
+    for _ in range(0, n-1):
         tab[0].append('R_'+str(i+1)+'(x_i)')
 
         fun_prime = tmp_fun.diff(x)
@@ -69,9 +69,9 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
                 else:
                     tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
 
-                if j==i+1:
+                if j == i+1:
                     polynomial_tmp += '*(x-(' + str(tab[j-1][0]) + '))'
-                    polynomial += '+' + str(tab[j][i+1]) + polynomial_tmp;
+                    polynomial += '+' + str(tab[j][i+1]) + polynomial_tmp
 
         i += 1
 

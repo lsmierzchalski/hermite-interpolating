@@ -131,7 +131,7 @@ def update_graph(n_clicks, function_value, start_value, stop_value, num_value, b
     nodes = np.linspace(float(begin_value), float(end_value), int(num_nodes_input))
 
     steps = np.linspace(float(start), float(stop), int(num_value))
-    x = np.append(steps,nodes)
+    x = np.append(steps, nodes)
     x.sort()
 
     data = []
