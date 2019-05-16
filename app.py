@@ -80,6 +80,19 @@ app.layout = html.Div([
                 type='number',
                 id='num_input'
             ),
+            html.H6('Obliczanie błędów - ustawienia'),
+            html.Label('Węzeł:'),
+            dcc.Input(
+                value='0',
+                type='text',
+                id='node_number_input'
+            ),
+            html.Label('Skok:'),
+            dcc.Input(
+                value='0.1',
+                type='text',
+                id='step_input'
+            ),
         ], className="two columns"),
         html.Div([
             html.H6('Wynikowy wielomian dla wezłów równoodległych:'),
@@ -100,7 +113,21 @@ app.layout = html.Div([
             html.H6('Wykres funkcji'),
             dcc.Graph(
                 id='example-graph',
-            )
+            ),
+            html.Div([
+                html.Div([
+                    html.H6('Błąd w podanym x'),
+                    html.Div(
+                        id='error-in-x',
+                        children=''
+                    )], className='six columns', style={"white-space": "pre-line"}),
+                html.Div([
+                    html.H6('Błąd maksymalny w przedziale interpolacji'),
+                    html.Div(
+                        id='max-error',
+                        children=''
+                    )], className='six columns', style={"white-space": "pre-line"}),
+            ], className='row')
         ], className="ten columns")
     ], className='row')
 ])
@@ -109,11 +136,15 @@ app.layout = html.Div([
 def get_result_function(nodes, fun_str):
     fun = parse_expr(fun_str)
     x = Symbol('x')
-    result = hermite.hermite_interpolationg(nodes, fun, x, True)
+    result = hermite.hermite_interpolationg(nodes, fun, x)
     return result
 
+
 @app.callback(
-              dash.dependencies.Output('example-graph', 'figure'),
+              [dash.dependencies.Output('example-graph', 'figure'),
+               dash.dependencies.Output('error-in-x', 'children'),
+               dash.dependencies.Output('max-error', 'children')
+               ],
               [dash.dependencies.Input('start_button', 'n_clicks')],
               [dash.dependencies.State('function_input', 'value'),
                dash.dependencies.State('start_input', 'value'),
@@ -122,10 +153,25 @@ def get_result_function(nodes, fun_str):
                dash.dependencies.State('begin_input', 'value'),
                dash.dependencies.State('end_input', 'value'),
                dash.dependencies.State('num_nodes_input', 'value'),
-               dash.dependencies.State('nodes_input', 'value')
+               dash.dependencies.State('nodes_input', 'value'),
+               dash.dependencies.State('node_number_input', 'value'),
+               dash.dependencies.State('step_input', 'value')
                ]
               )
-def update_graph(n_clicks, function_value, start_value, stop_value, num_value, begin_value, end_value, num_nodes_input, nodes_input):
+def update_graph(
+        n_clicks,
+        function_value,
+        start_value,
+        stop_value,
+        num_value,
+        begin_value,
+        end_value,
+        num_nodes_input,
+        nodes_input,
+        node_number_input,
+        step_input
+):
+
     X = Symbol('x')
     fun = parse_expr(function_value)
 
@@ -164,7 +210,7 @@ def update_graph(n_clicks, function_value, start_value, stop_value, num_value, b
         name='węzły równoodległe'
     ))
 
-    data = draw_interpolation_with_chebyshev_nodes(
+    data, chebyshev_calculation = draw_interpolation_with_chebyshev_nodes(
         data,
         function_value,
         float(begin_value),
@@ -173,7 +219,7 @@ def update_graph(n_clicks, function_value, start_value, stop_value, num_value, b
         steps
     )
 
-    data = draw_interpolation_with_own_nodes(
+    data, own_nodes_calculation = draw_interpolation_with_own_nodes(
         data,
         function_value,
         steps,
@@ -188,7 +234,11 @@ def update_graph(n_clicks, function_value, start_value, stop_value, num_value, b
         )
     }
 
-    return figure
+    error_in_x = calculate_error_in_x(float(node_number_input), function_value, fun_result, chebyshev_calculation, own_nodes_calculation)
+
+    max_error_in_range = calculate_max_error_in_range(function_value, fun_result, chebyshev_calculation, own_nodes_calculation, float(begin_value), float(end_value), float(step_input))
+
+    return figure, error_in_x, max_error_in_range
 
 
 def draw_interpolation_with_own_nodes(data, function_value, steps, nodes_input):
@@ -213,7 +263,7 @@ def draw_interpolation_with_own_nodes(data, function_value, steps, nodes_input):
         name='węzły własne'
     ))
 
-    return data
+    return data, fun_result
 
 
 def draw_interpolation_with_chebyshev_nodes(data, function_value, begin_value, end_value, num_nodes, steps):
@@ -238,7 +288,7 @@ def draw_interpolation_with_chebyshev_nodes(data, function_value, begin_value, e
         name='węzły Chebysheva'
     ))
 
-    return data
+    return data, fun_result
 
 
 @app.callback(
@@ -280,6 +330,56 @@ def update_output(n_click, function_value, nodes_input):
     nodes = np.array([float(num) for num in nodes_input.split(',')])
     fun_result = get_result_function(nodes, function_value)
     return str(fun_result).format()
+
+
+def calculate_error_in_x(node_number_input, function_value, fun_result, chebyshev_calculation, own_nodes_calculation):
+    parallel_nodes_error = calculate_absolute_error(function_value, fun_result, node_number_input)
+    chebyshev_nodes_error = calculate_absolute_error(function_value, chebyshev_calculation, node_number_input)
+    own_nodes_error = calculate_absolute_error(function_value, own_nodes_calculation, node_number_input)
+
+    return f'Błąd dla węzłów równoodległych: {str(parallel_nodes_error)} \n' \
+        f' Błąd dla węzłów Czebyszewa: {str(chebyshev_nodes_error)} \n' \
+        f'Błąd dla węzłow podanych przez użytkownika {str(own_nodes_error)}'
+
+
+def calculate_max_error_in_range(
+        function_value,
+        fun_result,
+        chebyshev_calculation,
+        own_nodes_calculation,
+        begin_value,
+        end_value,
+        step_value,
+):
+
+    parallel_nodes_error = get_max_error(function_value, fun_result, begin_value, end_value, step_value)
+    chebyshev_nodes_error = get_max_error(function_value, chebyshev_calculation, begin_value, end_value, step_value)
+    own_nodes_error = get_max_error(function_value, own_nodes_calculation, begin_value, end_value, step_value)
+
+    return f'Błąd maksymalny dla węzłów równoodległych: {str(parallel_nodes_error)} \n' \
+        f' Błąd maksymalny dla węzłów Czebyszewa: {str(chebyshev_nodes_error)} \n' \
+        f'Błąd maksymalny dla węzłow podanych przez użytkownika {str(own_nodes_error)}'
+
+
+def get_max_error(fun1, fun2, begin_value, end_value, step_value):
+    number = begin_value
+    errors_list =[]
+
+    while number <= end_value:
+        error = calculate_absolute_error(fun1, fun2, number)
+        errors_list.append(error)
+        number += step_value
+
+    return max(errors_list)
+
+
+def calculate_absolute_error(fun1, fun2, x_value):
+    x = Symbol('x')
+
+    fun1_result = parse_expr(fun1).subs(x, x_value)
+    fun2_result = fun2.subs(x, x_value)
+
+    return abs(fun1_result - fun2_result)
 
 
 if __name__ == '__main__':
