@@ -46,7 +46,7 @@ app.layout = html.Div([
             ),
             html.Label('liczba wezlow(równoodległe, Czebyszewa):'),
             dcc.Input(
-                value=10,
+                value=9,
                 type='number',
                 id='num_nodes_input'
             ),
@@ -244,6 +244,7 @@ def update_graph(
 def draw_interpolation_with_own_nodes(data, function_value, steps, nodes_input):
     x = Symbol('x')
     nodes = np.array([float(num) for num in nodes_input.split(',')])
+    nodes = np.sort(nodes)
     fun_result = get_result_function(nodes, function_value)
     fr = lambdify(x, fun_result, 'numpy')
     x_values = np.append(steps, nodes)
