@@ -286,7 +286,7 @@ def draw_interpolation_with_chebyshev_nodes(data, function_value, begin_value, e
         x=chebyshev_nodes,
         y=fr(chebyshev_nodes),
         mode='markers',
-        name='węzły Chebysheva'
+        name='węzły Czebyszewa'
     ))
 
     return data, fun_result

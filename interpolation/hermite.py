@@ -87,4 +87,4 @@ if __name__ == '__main__':
     fun = parse_expr('sin(x)')
 
     nodes = np.array([1,1, 3,3])
-    print(hermite_interpolationg(nodes, fun, x))
+    print(hermite_interpolationg(nodes, fun, x, True))
