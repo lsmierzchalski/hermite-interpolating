@@ -22,7 +22,7 @@ server = app.server
 
 app.layout = html.Div([
     html.H1('Interpolacja funkcji metodą Hermite’a.'),
-    html.P('Projekt na WZM'),
+    html.P('Projekt na WZM 2019 Dominik Krystkowiak i Łukasz Śmierzchalski'),
     html.Div([
         html.Div([
             html.H6('Funkcja'),
@@ -44,7 +44,7 @@ app.layout = html.Div([
                 type='number',
                 id='end_input'
             ),
-            html.Label('liczba wezlow(równoodległe, Czebyszewa):'),
+            html.Label('liczba węzlow(równoodległe, Czebyszewa):'),
             dcc.Input(
                 value=9,
                 type='number',
@@ -95,12 +95,12 @@ app.layout = html.Div([
             ),
         ], className="two columns"),
         html.Div([
-            html.H6('Wynikowy wielomian dla wezłów równoodległych:'),
+            html.H6('Wynikowy wielomian dla węzłów równoodległych:'),
             html.Div(
                 id='display-value',
                 children='xd(x)'
             ),
-            html.H6('Wynikowy wielomian dla wezłów Czebyszewa:'),
+            html.H6('Wynikowy wielomian dla węzłów Czebyszewa:'),
             html.Div(
                 id='display-chebyshev-value',
                 children='xd(x)'
@@ -338,9 +338,13 @@ def calculate_error_in_x(node_number_input, function_value, fun_result, chebyshe
     chebyshev_nodes_error = calculate_absolute_error(function_value, chebyshev_calculation, node_number_input)
     own_nodes_error = calculate_absolute_error(function_value, own_nodes_calculation, node_number_input)
 
-    return f'Błąd dla węzłów równoodległych: {str(parallel_nodes_error)} \n' \
-        f' Błąd dla węzłów Czebyszewa: {str(chebyshev_nodes_error)} \n' \
-        f'Błąd dla węzłow podanych przez użytkownika {str(own_nodes_error)}'
+    parallel_nodes_error_sn = '%.4E' % parallel_nodes_error
+    chebyshev_nodes_error_sn = '%.4E' % chebyshev_nodes_error
+    own_nodes_error_sn = '%.4E' % own_nodes_error
+
+    return f'Błąd dla węzłów równoodległych: {str(parallel_nodes_error_sn)} \n' \
+        f' Błąd dla węzłów Czebyszewa: {str(chebyshev_nodes_error_sn)} \n' \
+        f'Błąd dla węzłow podanych przez użytkownika {str(own_nodes_error_sn)}'
 
 
 def calculate_max_error_in_range(
@@ -357,9 +361,13 @@ def calculate_max_error_in_range(
     chebyshev_nodes_error = get_max_error(function_value, chebyshev_calculation, begin_value, end_value, step_value)
     own_nodes_error = get_max_error(function_value, own_nodes_calculation, begin_value, end_value, step_value)
 
-    return f'Błąd maksymalny dla węzłów równoodległych: {str(parallel_nodes_error)} \n' \
-        f' Błąd maksymalny dla węzłów Czebyszewa: {str(chebyshev_nodes_error)} \n' \
-        f'Błąd maksymalny dla węzłow podanych przez użytkownika {str(own_nodes_error)}'
+    parallel_nodes_error_sn = '%.4E' % parallel_nodes_error
+    chebyshev_nodes_error_sn = '%.4E' % chebyshev_nodes_error
+    own_nodes_error_sn = '%.4E' % own_nodes_error
+
+    return f'Błąd maksymalny dla węzłów równoodległych: {str(parallel_nodes_error_sn)} \n' \
+        f' Błąd maksymalny dla węzłów Czebyszewa: {str(chebyshev_nodes_error_sn)} \n' \
+        f'Błąd maksymalny dla węzłow podanych przez użytkownika {str(own_nodes_error_sn)}'
 
 
 def get_max_error(fun1, fun2, begin_value, end_value, step_value):
