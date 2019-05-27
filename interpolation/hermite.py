@@ -1,7 +1,7 @@
 import numpy as np
 from sympy import *
 from sympy.parsing.sympy_parser import parse_expr
-
+import math
 
 def print_2d_array(tab):
     for i in range(0, len(tab[0])):
@@ -65,7 +65,7 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
                 tab[j].append('-')
             else:
                 if tab[j][i] == tab[j - 1][i]:
-                    tab[j].append(fun_prime.subs(x, tab[j][0]) / i)
+                    tab[j].append(fun_prime.subs(x, tab[j][0]) / math.factorial(i))
                 else:
                     tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
 
