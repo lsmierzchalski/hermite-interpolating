@@ -9,7 +9,7 @@ def print_2d_array(tab):
     print('')
     for r in tab[1:]:
         for c in r:
-            print(c, end="\t\t\t")
+            print(c, end="\t")
         print()
 
 
@@ -64,7 +64,7 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
             if j+1 <= i+1:
                 tab[j].append('-')
             else:
-                if tab[j][i] == tab[j - 1][i]:
+                if tab[j][0] == tab[j - 1][0]:
                     tab[j].append(fun_prime.subs(x, tab[j][0]) / math.factorial(i))
                 else:
                     tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
@@ -74,17 +74,65 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
                     polynomial += '+' + str(tab[j][i+1]) + polynomial_tmp
 
         i += 1
-
     if print_tab:
         print_2d_array(tab)
-
     return simplify(polynomial)
+
+
+def hermite_interpolationg_return_array(nodes, fun, x, print_tab=false):
+    tab = [[]]
+    tab.insert(0,[])
+    tab[0].append('x_i\t')
+    tab[0].append('f(x_i)\t')
+    i = 1
+    for item in nodes:
+        tab.insert(i, [])
+        tab[i].append(item)
+        tab[i].append(fun.subs(x, item))
+        i += 1
+
+    n = len(nodes)
+
+    i = 1
+    tmp_fun = fun
+    for _ in range(0, n-1):
+        tab[0].append('R_'+str(i+1)+'(x_i)')
+
+        fun_prime = tmp_fun.diff(x)
+        tmp_fun = fun_prime
+
+        for j in range(1, n+1):
+
+            if j+1 <= i+1:
+                tab[j].append('-')
+            else:
+                if tab[j][0] == tab[j - 1][0]:
+                    tab[j].append(fun_prime.subs(x, tab[j][0]) / math.factorial(i))
+                else:
+                    tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
+        i += 1
+    if print_tab:
+        print_2d_array(tab)
+    return tab[len(tab[0])-1]
+
+
+def calculate_value_for_polynomial_in_array(n, array, nodes):
+    if len(array) == 0 or len(nodes) == 0:
+        return 0
+    result = array[1]
+    i = 0
+    tmp = 1
+    for coefficient in array[2:]:
+        tmp *= (n - nodes[i])
+        result += coefficient*tmp
+        i += 1
+
+    return result
 
 
 if __name__ == '__main__':
 
     x = Symbol('x')
-    fun = parse_expr('sin(x)')
+    fun = parse_expr('x**8+1')
 
-    nodes = np.array([1,1, 3,3])
-    print(hermite_interpolationg(nodes, fun, x, True))
+    nodes = np.array([-1,-1,-1,0,0,0, 1,1,1])

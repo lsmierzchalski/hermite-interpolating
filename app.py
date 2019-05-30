@@ -196,16 +196,29 @@ def update_graph(
     fun_result = get_result_function(nodes, function_value)
     fr = lambdify(X, fun_result, 'numpy')
 
+    array = hermite.hermite_interpolationg_return_array(nodes, fun, X)
+    nodes_descending = nodes[::-1]
+
+    fr_y = []
+    for n in x:
+        fr_y.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_y = np.array(fr_y)
+
+    fr_nodes = []
+    for n in nodes:
+        fr_nodes.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_nodes = np.array(fr_nodes)
+
     data.append(go.Scatter(
         x=x,
-        y=fr(x),
+        y=np_fr_y,
         mode='lines',
         name='Wyniki interpolacji przy pomocy węzłów równoodległych'
     ))
 
     data.append(go.Scatter(
         x=nodes,
-        y=fr(nodes),
+        y=np_fr_nodes,
         mode='markers',
         name='węzły równoodległe'
     ))
@@ -250,16 +263,32 @@ def draw_interpolation_with_own_nodes(data, function_value, steps, nodes_input):
     x_values = np.append(steps, nodes)
     x_values.sort()
 
+    fun = parse_expr(function_value)
+    x = Symbol('x')
+
+    array = hermite.hermite_interpolationg_return_array(nodes, fun, x)
+    nodes_descending = nodes[::-1]
+
+    fr_y = []
+    for n in x_values:
+        fr_y.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_y = np.array(fr_y)
+
+    fr_nodes = []
+    for n in nodes:
+        fr_nodes.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_nodes = np.array(fr_nodes)
+
     data.append(go.Scatter(
         x=x_values,
-        y=fr(x_values),
+        y=np_fr_y,
         mode='lines',
         name='Wyniki interpolacji przy pomocy podanych węzłów'
     ))
 
     data.append(go.Scatter(
         x=nodes,
-        y=fr(nodes),
+        y=np_fr_nodes,
         mode='markers',
         name='węzły własne'
     ))
@@ -275,16 +304,32 @@ def draw_interpolation_with_chebyshev_nodes(data, function_value, begin_value, e
     x_values = np.append(steps, chebyshev_nodes)
     x_values.sort()
 
+    fun = parse_expr(function_value)
+    x = Symbol('x')
+
+    array = hermite.hermite_interpolationg_return_array(chebyshev_nodes, fun, x)
+    nodes_descending = chebyshev_nodes[::-1]
+
+    fr_y = []
+    for n in x_values:
+        fr_y.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_y = np.array(fr_y)
+
+    fr_nodes = []
+    for n in chebyshev_nodes:
+        fr_nodes.append(float(hermite.calculate_value_for_polynomial_in_array(n, array, nodes_descending)))
+    np_fr_nodes = np.array(fr_nodes)
+
     data.append(go.Scatter(
         x=x_values,
-        y=fr(x_values),
+        y=np_fr_y,
         mode='lines',
         name='Wyniki interpolacji przy pomocy węzłów Czebyszewa'
     ))
 
     data.append(go.Scatter(
         x=chebyshev_nodes,
-        y=fr(chebyshev_nodes),
+        y=np_fr_nodes,
         mode='markers',
         name='węzły Czebyszewa'
     ))
