@@ -64,7 +64,7 @@ def hermite_interpolationg(nodes, fun, x, print_tab=false):
             if j+1 <= i+1:
                 tab[j].append('-')
             else:
-                if tab[j][0] == tab[j - 1][0]:
+                if tab[j][0] == tab[j - i][0]:
                     tab[j].append(fun_prime.subs(x, tab[j][0]) / math.factorial(i))
                 else:
                     tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
@@ -106,7 +106,7 @@ def hermite_interpolationg_return_array(nodes, fun, x, print_tab=false):
             if j+1 <= i+1:
                 tab[j].append('-')
             else:
-                if tab[j][0] == tab[j - 1][0]:
+                if tab[j][0] == tab[j - i][0]:
                     tab[j].append(fun_prime.subs(x, tab[j][0]) / math.factorial(i))
                 else:
                     tab[j].append(divided_differences([tab[j][0], tab[j - i][0]], [tab[j][i], tab[j - 1][i]]))
@@ -136,3 +136,4 @@ if __name__ == '__main__':
     fun = parse_expr('x**8+1')
 
     nodes = np.array([-1,-1,-1,0,0,0, 1,1,1])
+    array = hermite_interpolationg_return_array(nodes, fun, x, True)
